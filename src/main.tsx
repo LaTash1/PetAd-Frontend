@@ -1,3 +1,6 @@
+import { z } from 'zod'
+import { en } from 'zod/locales'
+import { activeLocale, localise } from './i18n'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
@@ -15,8 +18,21 @@ import { useFlag } from './hooks/useFlag'
 import './i18n'
 import { MaintenanceRedirect } from './components/MaintenanceRedirect'
 import { NetworkStatusBanner } from './components/NetworkStatusBanner'
+import { logger } from './lib/logger'
 
 loadEnv()
+
+document.documentElement.lang = activeLocale
+if (activeLocale === 'en-XA') {
+  const englishError = en().localeError
+  z.config({
+    customError: (issue) => {
+      const result = englishError(issue)
+      const message = typeof result === 'string' ? result : result?.message
+      return message ? localise(message) : undefined
+    },
+  })
+}
 
 const STALE_SW_RELOAD_KEY = 'petad:stale-sw-reload'
 
@@ -42,8 +58,9 @@ async function cleanupServiceWorkers() {
     // registration we encounter here (e.g. left behind by an earlier dev visit)
     // is stale in this build and must be removed, not kept.
     const isMswWorker = scriptUrl.endsWith('/mockServiceWorker.js')
+    const isPetAdWorker = scriptUrl.endsWith('/sw.js')
 
-    if (isMswWorker || !import.meta.env.DEV) {
+    if (isMswWorker || (!import.meta.env.DEV && !isPetAdWorker)) {
       await registration.unregister()
       removedStaleWorker = true
     }
@@ -94,9 +111,17 @@ async function bootstrap() {
       })
     }
   } else {
-    // A stale development worker must still be removed, but it should not
-    // delay the first production paint.
+    // Keep the application worker registered in production, but remove stale
+    // development workers before registering the current worker.
     void cleanupServiceWorkers()
+      .then((reloadingAfterCleanup) => {
+        if (!reloadingAfterCleanup && 'serviceWorker' in navigator) {
+          void navigator.serviceWorker
+            .register('/sw.js')
+            .catch((error: unknown) => logger.error('Failed to register app service worker', error))
+        }
+      })
+      .catch((error: unknown) => logger.error('Failed to clean up service workers', error))
   }
 
   createRoot(document.getElementById('root')!).render(

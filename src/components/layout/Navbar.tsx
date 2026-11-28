@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { House, Eye, List, Heart, ChevronDown, ClipboardList, MessageCircle } from "lucide-react";
+import { House, Eye, List, Heart, ChevronDown, ClipboardList, MessageCircle, Bookmark, Settings } from "lucide-react";
 import logo from "../../assets/logo.svg";
 import owner from "../../assets/owner.png";
 import { PendingApprovalBadge } from "../badges/PendingApprovalBadge";
@@ -16,6 +16,7 @@ const baseNavLinks = [
   { label: "Home", path: "/home", icon: House },
   { label: "Interests", path: "/interests", icon: Eye },
   { label: "Listings", path: "/listings", icon: List },
+  { label: "Saved searches", path: "/saved-searches", icon: Bookmark },
   { label: "Messages", path: "/messages", icon: MessageCircle },
 ];
 
@@ -66,7 +67,7 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 w-full bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-y-2">
       <Link to="/home" className="flex items-center gap-2">
         <img src={logo} alt="Logo" className="w-8 h-8" />
         <div>
@@ -103,7 +104,7 @@ export function Navbar() {
         })}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <label className="sr-only" htmlFor="language-select">
           {t("language")}
         </label>
@@ -123,7 +124,7 @@ export function Navbar() {
           className="relative p-2.5 bg-gray-50 dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
           <Heart size={20} />
-          <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#001323] dark:bg-blue-600 rounded-full">
+          <span className="absolute -top-1 -end-1 flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#001323] dark:bg-blue-600 rounded-full">
             2
           </span>
         </Link>
@@ -132,11 +133,19 @@ export function Navbar() {
           <ThemeToggle />
         </Flag>
 
+        <Link
+          to="/settings/notifications"
+          aria-label="Settings"
+          className="rounded-full p-2.5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        >
+          <Settings size={20} />
+        </Link>
+
         <FreighterWalletButton />
 
         <DeferredNotificationCentreDropdown />
 
-        <div className="flex items-center gap-3 ml-2 cursor-pointer group">
+<div className="flex items-center gap-1 sm:gap-3 sm:ms-2 cursor-pointer group">
           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-100">
             <img src={owner} alt="User Avatar" loading="lazy" className="w-full h-full object-cover" />
           </div>
